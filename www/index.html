@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>MiniWin • Windows-style Linux + Wine</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;color:#e9f0ff;background:radial-gradient(circle at 15% -30%,#284a92,transparent 45%),#0b1327}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #ffffff17;padding:14px max(16px,3vw);background:#0c182bbd}
+.brand{font-size:20px;font-weight:780;letter-spacing:-.6px}.brand span{color:#6fb6ff}.brand small{font-size:11px;color:#a2b4cf;display:block;font-weight:400;letter-spacing:0;margin-top:3px}
+.tag{border:1px solid #395272;background:#18304e;padding:7px 10px;border-radius:9px;color:#b6d9ff;font-size:12px}
+main{max-width:1530px;margin:auto;padding:18px}.grid{display:grid;grid-template-columns:minmax(0,1fr) 318px;gap:16px}
+.panel{border-radius:15px;background:#101e35;border:1px solid #29415e;overflow:hidden;box-shadow:0 12px 40px #00000032}
+.panelbar{display:flex;align-items:center;justify-content:space-between;background:#162740;padding:12px 14px;gap:8px;font-size:13px;font-weight:650}
+.dots{color:#76d3a6;letter-spacing:4px}.screen{background:#071022;min-height:400px}
+iframe{display:block;width:100%;height:min(69vh,740px);min-height:395px;border:0;background:#070e1a}
+.sidebar{padding:18px}.sidebar h2{font-size:18px;margin:3px 0 8px}.muted{color:#a6b8d0;font-size:13px;line-height:1.5}
+button,.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 13px;margin:5px 0;border-radius:9px;border:1px solid #385a81;cursor:pointer;font:inherit;font-size:13px;color:#f0f7ff;background:#193657;text-decoration:none}
+button:hover,.btn:hover{background:#27517f}.primary{background:#2074df;border-color:#2e8cfa}.primary:hover{background:#3187ed}
+.file{font-size:12px;color:#b4c7e2;display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.full{width:100%}input[type=file]{display:block;font-size:12px;width:100%;margin:12px 0;color:#c3d5ed}
+.sep{height:1px;background:#29405c;margin:16px 0}#message{min-height:40px;font-size:12px;line-height:1.5;color:#a2edcb;margin-top:9px}#list{display:grid;gap:7px;max-height:180px;overflow:auto}#list .line{display:flex;align-items:center;gap:8px;justify-content:space-between;background:#0d1b30;padding:5px 8px;border-radius:8px}#list button{padding:6px 10px;margin:0;flex-shrink:0}
+footer{color:#889eb9;font-size:12px;margin-top:12px;line-height:1.5}
+@media(max-width:850px){.grid{grid-template-columns:1fr}iframe{height:56vh;min-height:300px}.sidebar{padding:16px}}
+</style>
+</head>
+<body>
+<header><div class="brand">▦ Mini<span>Win</span><small>Лёгкий Linux в стиле Windows • Wine x64</small></div><div class="tag">Render + noVNC</div></header>
+<main>
+  <div class="grid">
+    <section class="panel">
+      <div class="panelbar"><span><span class="dots">● ● ●</span> &nbsp; Рабочий стол</span><a class="btn" href="/vnc.html?autoconnect=1&amp;resize=scale&amp;path=websockify" target="_blank" rel="noopener">⛶ На весь экран</a></div>
+      <div class="screen"><iframe title="Linux desktop" src="/vnc.html?autoconnect=1&amp;resize=scale&amp;path=websockify" allow="fullscreen"></iframe></div>
+    </section>
+    <aside class="panel sidebar">
+      <h2>Запуск Windows EXE</h2>
+      <p class="muted">Поддерживаются некоторые простые <b>64-битные</b> Windows-программы через Wine. Сначала проверь Блокнот, затем загрузи свой EXE.</p>
+      <button class="primary full" id="notepad">▶ Проверить: Блокнот Wine</button>
+      <div class="sep"></div>
+      <label for="exe"><b>Загрузить .exe</b></label>
+      <input id="exe" type="file" accept=".exe,application/x-msdownload">
+      <button id="upload" class="full">⬆ Загрузить EXE (до 32 МБ)</button>
+      <div id="message" role="status" aria-live="polite">Файлы сохраняются временно.</div>
+      <div class="sep"></div>
+      <h2>Загруженные программы</h2>
+      <div id="list"><span class="muted">Загрузка списка...</span></div>
+      <div class="sep"></div>
+      <p class="muted">Подсказка: правый клик на рабочем столе открывает меню с CMD, проводником Wine и терминалом Linux.</p>
+    </aside>
+  </div>
+  <footer>Это не настоящая Windows 10. На бесплатном Render установленные программы и файлы удаляются при перезапуске сервиса. Запускай только EXE из надёжных источников.</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const msg=(s,bad=false)=>{ $('message').textContent=s; $('message').style.color=bad?'#ffadb9':'#a2edcb'; };
+async function post(path,body){const r=await fetch(path,{method:'POST',headers:{'X-MiniWin-Action':'1',...(body instanceof File?{'Content-Type':'application/octet-stream'}:{'Content-Type':'application/json'})},body:body instanceof File?body:JSON.stringify(body||{})});let x;try{x=await r.json()}catch{x={error:'Ответ сервера недоступен'}}if(!r.ok)throw new Error(x.error||'Ошибка');return x;}
+async function refresh(){try{const r=await fetch('/api/list');if(!r.ok)throw new Error('Ошибка');const data=await r.json();$('list').replaceChildren();if(!data.files.length){$('list').textContent='Пока нет EXE';return;}for(const name of data.files){const line=document.createElement('div');line.className='line';const text=document.createElement('span');text.textContent=name;text.className='file';text.title=name;const b=document.createElement('button');b.textContent='▶ Пуск';b.onclick=()=>run(name);line.append(text,b);$('list').append(line);}}catch(e){$('list').textContent='Не удалось получить файлы';}}
+async function run(name){try{const x=await post('/api/run',{name});msg(x.message+' — смотри рабочий стол.');}catch(e){msg(e.message,true);}}
+$('notepad').onclick=async()=>{try{msg('Запуск Wine, первый раз может быть медленным...');const x=await post('/api/notepad');msg(x.message+' — смотри рабочий стол.');}catch(e){msg(e.message,true);}};
+$('upload').onclick=async()=>{const f=$('exe').files[0];if(!f){msg('Выбери файл .exe',true);return;}if(f.size>32*1024*1024){msg('Максимальный размер — 32 МБ',true);return;}try{msg('Загрузка '+f.name+'...');const r=await post('/api/upload?name='+encodeURIComponent(f.name),f);msg(r.message+' — теперь нажми «Пуск».');await refresh();}catch(e){msg(e.message,true);}};
+refresh();
+</script>
+</body>
+</html>
