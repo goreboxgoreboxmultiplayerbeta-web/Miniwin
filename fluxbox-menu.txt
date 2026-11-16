@@ -1,0 +1,9 @@
+[begin] (MiniWin Desktop)
+  [exec] (Notepad / Блокнот) {wine notepad.exe}
+  [exec] (File Manager / Файлы Wine) {wine explorer.exe}
+  [exec] (Windows CMD) {wine cmd.exe}
+  [exec] (Wine Configuration) {winecfg}
+  [exec] (Linux Terminal) {xterm}
+  [separator]
+  [exit] (Exit Fluxbox)
+[end]
